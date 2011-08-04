@@ -14,8 +14,8 @@ CUR_QT = $$[QT_VERSION]
 }
 
 # check for g++ compiler
-contains(QMAKE_CC,.*g\+\+.*) {
-	CONFIG += HAVE_GCC
+contains(QMAKE_CC,.*g\\+\\+.*) {
+        CONFIG += HAVE_GCC
 }
 contains(QMAKE_CC,.*gcc.*) {
 	CONFIG += HAVE_GCC

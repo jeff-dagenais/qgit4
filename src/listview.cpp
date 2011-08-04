@@ -433,181 +433,180 @@ static QColor blend(const QColor& col1, const QColor& col2, int amount = 128) {
 void ListViewDelegate::paintGraphLane(QPainter* p, int type, int x1, int x2,
                                       const QColor& col, const QColor& activeCol, const QBrush& back) const {
 
-	int h = laneHeight / 2;
-	int m = (x1 + x2) / 2;
-	int r = (x2 - x1) / 3;
-	int d =  2 * r;
+#define PADDING  5
 
-	#define P_CENTER m , h
-	#define P_0      x2, h      // >
-	#define P_90     m , 0      // ^
-	#define P_180    x1, h      // <
-	#define P_270    m , 2 * h  // v
-	#define DELTA_UR 2*(x1 - m), 2*h ,   0*16, 90*16  // -,
-	#define DELTA_DR 2*(x1 - m), 2*-h, 270*16, 90*16  // -'
-	#define DELTA_UL 2*(x2 - m), 2*h ,  90*16, 90*16  //  ,-
-	#define DELTA_DL 2*(x2 - m), 2*-h, 180*16, 90*16  //  '-
-	#define CENTER_UR x1, 2*h, 225
-	#define CENTER_DR x1, 0  , 135
-	#define CENTER_UL x2, 2*h, 315
-	#define CENTER_DL x2, 0  ,  45
-	#define R_CENTER m - r, h - r, d, d
+    x1 += PADDING;
+    x2 += PADDING;
 
-	static QPen myPen(Qt::black, 2); // fast path here
+#define P_CENTER m , h
+#define P_0      x2 , h      // >
+#define P_90     m , 0                // ^
+#define P_180    x1, h      // <
+#define P_270    m , 2 * h            // v
+#define DELTA_UR 2*(x1 - m), 2*h ,   0*16, 90*16  // -,
+#define DELTA_DR 2*(x1 - m), 2*-h, 270*16, 90*16  // -'
+#define DELTA_UL 2*(x2 - m), 2*h ,  90*16, 90*16  //  ,-
+#define DELTA_DL 2*(x2 - m), 2*-h, 180*16, 90*16  //  '-
+#define CENTER_UR x1, 2*h, 225
+#define CENTER_DR x1, 0  , 135
+#define CENTER_UL x2, 2*h, 315
+#define CENTER_DL x2, 0  ,  45
+#define R_CENTER m - r, h - r, d, d
 
-	// arc
-	switch (type) {
-	case JOIN:
-	case JOIN_R:
-	case HEAD:
-	case HEAD_R: {
-		QConicalGradient gradient(CENTER_UR);
-		gradient.setColorAt(0.375, col);
-		gradient.setColorAt(0.625, activeCol);
-		myPen.setBrush(gradient);
-		p->setPen(myPen);
-		p->drawArc(P_CENTER, DELTA_UR);
-		break;
-	}
-	case JOIN_L: {
-		QConicalGradient gradient(CENTER_UL);
-		gradient.setColorAt(0.375, activeCol);
-		gradient.setColorAt(0.625, col);
-		myPen.setBrush(gradient);
-		p->setPen(myPen);
-		p->drawArc(P_CENTER, DELTA_UL);
-		break;
-	}
-	case TAIL:
-	case TAIL_R: {
-		QConicalGradient gradient(CENTER_DR);
-		gradient.setColorAt(0.375, activeCol);
-		gradient.setColorAt(0.625, col);
-		myPen.setBrush(gradient);
-		p->setPen(myPen);
-		p->drawArc(P_CENTER, DELTA_DR);
-		break;
-	}
-	default:
-		break;
-	}
+    int h = laneHeight / 2;
+    int m = (x1 + x2) / 2;
+    int r = (x2 - x1) / 3;
+    int d =  2 * r;
 
-	myPen.setColor(col);
-	p->setPen(myPen);
 
-	// vertical line
-	switch (type) {
-	case ACTIVE:
-	case NOT_ACTIVE:
-	case MERGE_FORK:
-	case MERGE_FORK_R:
-	case MERGE_FORK_L:
-	case JOIN:
-	case JOIN_R:
-	case JOIN_L:
-	case CROSS:
-		p->drawLine(P_90, P_270);
-		break;
-	case HEAD_L:
-	case BRANCH:
-		p->drawLine(P_CENTER, P_270);
-		break;
-	case TAIL_L:
-	case INITIAL:
-	case BOUNDARY:
-	case BOUNDARY_C:
-	case BOUNDARY_R:
-	case BOUNDARY_L:
-		p->drawLine(P_90, P_CENTER);
-		break;
-	default:
-		break;
-	}
+    static QPen myPen(Qt::black, 2); // fast path here
 
-	myPen.setColor(activeCol);
-	p->setPen(myPen);
+    // arc
+    switch (type) {
+    case JOIN:
+    case JOIN_R:
+    case HEAD:
+    case HEAD_R: {
+        myPen.setColor(col);
+        p->setPen(myPen);
+        p->drawArc(P_CENTER, DELTA_UR);
+        break;
+    }
+    case JOIN_L: {
+        myPen.setColor(col);
+        p->setPen(myPen);
+        p->drawArc(P_CENTER, DELTA_UL);
+        break;
+    }
+    case TAIL:
+    case TAIL_R: {
+        myPen.setColor(col);
+        p->setPen(myPen);
+        p->drawArc(P_CENTER, DELTA_DR);
+        break;
+    }
+    default:
+        break;
+    }
 
-	// horizontal line
-	switch (type) {
-	case MERGE_FORK:
-	case JOIN:
-	case HEAD:
-	case TAIL:
-	case CROSS:
-	case CROSS_EMPTY:
-	case BOUNDARY_C:
-		p->drawLine(P_180, P_0);
-		break;
-	case MERGE_FORK_R:
-	case BOUNDARY_R:
-		p->drawLine(P_180, P_CENTER);
-		break;
-	case MERGE_FORK_L:
-	case HEAD_L:
-	case TAIL_L:
-	case BOUNDARY_L:
-		p->drawLine(P_CENTER, P_0);
-		break;
-	default:
-		break;
-	}
+    myPen.setColor(col);
+    p->setPen(myPen);
 
-	// center symbol, e.g. rect or ellipse
-	switch (type) {
-	case ACTIVE:
-	case INITIAL:
-	case BRANCH:
-		p->setPen(Qt::NoPen);
-		p->setBrush(col);
-		p->drawEllipse(R_CENTER);
-		break;
-	case MERGE_FORK:
-	case MERGE_FORK_R:
-	case MERGE_FORK_L:
-		p->setPen(Qt::NoPen);
-		p->setBrush(col);
-		p->drawRect(R_CENTER);
-		break;
-	case UNAPPLIED:
-		// Red minus sign
-		p->setPen(Qt::NoPen);
-		p->setBrush(Qt::red);
-		p->drawRect(m - r, h - 1, d, 2);
-		break;
-	case APPLIED:
-		// Green plus sign
-		p->setPen(Qt::NoPen);
-		p->setBrush(DARK_GREEN);
-		p->drawRect(m - r, h - 1, d, 2);
-		p->drawRect(m - 1, h - r, 2, d);
-		break;
-	case BOUNDARY:
-		p->setBrush(back);
-		p->drawEllipse(R_CENTER);
-		break;
-	case BOUNDARY_C:
-	case BOUNDARY_R:
-	case BOUNDARY_L:
-		p->setBrush(back);
-		p->drawRect(R_CENTER);
-		break;
-	default:
-		break;
-	}
-	#undef P_CENTER
-	#undef P_0
-	#undef P_90
-	#undef P_180
-	#undef P_270
-	#undef DELTA_UR
-	#undef DELTA_DR
-	#undef DELTA_UL
-	#undef DELTA_DL
-	#undef CENTER_UR
-	#undef CENTER_DR
-	#undef CENTER_UL
-	#undef CENTER_DL
-	#undef R_CENTER
+    // vertical line
+    switch (type) {
+    case ACTIVE:
+    case NOT_ACTIVE:
+    case MERGE_FORK:
+    case MERGE_FORK_R:
+    case MERGE_FORK_L:
+    case JOIN:
+    case JOIN_R:
+    case JOIN_L:
+    case CROSS:
+        p->drawLine(P_90, P_270);
+        break;
+    case HEAD_L:
+    case BRANCH:
+        p->drawLine(P_CENTER, P_270);
+        break;
+    case TAIL_L:
+    case INITIAL:
+    case BOUNDARY:
+    case BOUNDARY_C:
+    case BOUNDARY_R:
+    case BOUNDARY_L:
+        p->drawLine(P_90, P_CENTER);
+        break;
+    default:
+        break;
+    }
+
+    myPen.setColor(col);
+    p->setPen(myPen);
+
+    // horizontal line
+    switch (type) {
+    case MERGE_FORK:
+    case JOIN:
+    case HEAD:
+    case TAIL:
+    case CROSS:
+    case CROSS_EMPTY:
+    case BOUNDARY_C:
+        p->drawLine(P_180, P_0);
+        break;
+    case MERGE_FORK_R:
+    case BOUNDARY_R:
+        p->drawLine(P_180, P_CENTER);
+        break;
+    case MERGE_FORK_L:
+    case HEAD_L:
+    case TAIL_L:
+    case BOUNDARY_L:
+        //p->drawLine(P_180, P_0);
+        break;
+    default:
+        break;
+    }
+
+    myPen.setColor(Qt::black);
+    p->setPen(myPen);
+
+    // center symbol, e.g. rect or ellipse
+    switch (type) {
+    case ACTIVE:
+    case INITIAL:
+    case BRANCH:
+        p->setBrush(back);
+        p->drawEllipse(R_CENTER);
+        break;
+    case MERGE_FORK:
+    case MERGE_FORK_R:
+    case MERGE_FORK_L:
+        p->setBrush(col);
+        p->drawRect(R_CENTER);
+        break;
+    case UNAPPLIED:
+        // Red minus sign
+        p->setPen(Qt::NoPen);
+        p->setBrush(Qt::red);
+        p->drawRect(m - r, h - 1, d, 2);
+        break;
+    case APPLIED:
+        // Green plus sign
+        p->setPen(Qt::NoPen);
+        p->setBrush(DARK_GREEN);
+        p->drawRect(m - r, h - 1, d, 2);
+        p->drawRect(m - 1, h - r, 2, d);
+        break;
+    case BOUNDARY:
+        p->setBrush(back);
+        p->drawEllipse(R_CENTER);
+        break;
+    case BOUNDARY_C:
+    case BOUNDARY_R:
+    case BOUNDARY_L:
+        p->setBrush(back);
+        p->drawRect(R_CENTER);
+        break;
+    default:
+        break;
+    }
+#undef P_CENTER
+#undef P_0
+#undef P_90
+#undef P_180
+#undef P_270
+#undef DELTA_UR
+#undef DELTA_DR
+#undef DELTA_UL
+#undef DELTA_DL
+#undef CENTER_UR
+#undef CENTER_DR
+#undef CENTER_UL
+#undef CENTER_DL
+#undef R_CENTER
+#undef PADDING
 }
 
 void ListViewDelegate::paintGraph(QPainter* p, const QStyleOptionViewItem& opt,
