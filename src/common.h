@@ -14,6 +14,7 @@
 #include <QLatin1String>
 #include <QVariant>
 #include <QVector>
+#include <QDebug>
 
 /*
    QVariant does not support size_t type used in Qt containers, this is
@@ -30,8 +31,8 @@ inline const QString  _valueOf(size_t x) { return QString::number((uint)x); }
 
 // some debug macros
 #define dbg(x)    qDebug(#x " is <%s>", _valueOf(x).toLatin1().constData())
-#define dbs(x)    qDebug(_valueOf(x).toLatin1().constData())
-#define dbp(s, x) qDebug(QString(s).arg(_valueOf(x)).toLatin1().constData())
+#define dbs(x)    qDebug() << _valueOf(x).toLatin1().constData()
+#define dbp(s, x) qDebug() << QString(s).arg(_valueOf(x)).toLatin1().constData()
 #define db1       qDebug("Mark Nr. 1")
 #define db2       qDebug("Mark Nr. 2")
 #define db3       qDebug("Mark Nr. 3")
